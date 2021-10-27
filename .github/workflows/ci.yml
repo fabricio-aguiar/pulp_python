@@ -7,7 +7,7 @@
 
 ---
 name: Python CI
-on: {pull_request: {branches: ['*']}}
+on: {push: {branches: ['*']}}
 jobs:
 
 
@@ -29,7 +29,7 @@ jobs:
 
   lint:
     runs-on: ubuntu-latest
-    
+
 
     steps:
       - uses: actions/checkout@v2
@@ -59,7 +59,7 @@ jobs:
           GITHUB_CONTEXT: ${{ github.event.pull_request.commits_url }}
         run: sh .github/workflows/scripts/check_commit.sh
 
-      
+
 
       # Lint code.
       - name: Run flake8
@@ -110,7 +110,7 @@ jobs:
           echo "FROM_PULPCORE_BRANCH=${{ matrix.FROM_PULPCORE_BRANCH }}" >> $GITHUB_ENV
 
       - name: Before Install
-        
+
         run: .github/workflows/scripts/before_install.sh
         shell: bash
         env:
@@ -124,7 +124,7 @@ jobs:
           GITHUB_CONTEXT: ${{ github.event.pull_request.commits_url }}
 
       - name: Install
-        
+
         run: .github/workflows/scripts/install.sh
         shell: bash
         env:
@@ -138,7 +138,7 @@ jobs:
           GITHUB_CONTEXT: ${{ github.event.pull_request.commits_url }}
 
       - name: Install Python client
-        
+
         run: .github/workflows/scripts/install_python_client.sh
         shell: bash
 
@@ -148,7 +148,7 @@ jobs:
         shell: bash
 
       - name: Before Script
-        
+
         run: .github/workflows/scripts/before_script.sh
         shell: bash
         env:
@@ -168,7 +168,7 @@ jobs:
           SECRETS_CONTEXT: ${{ toJson(secrets) }}
 
       - name: Script
-        
+
         run: .github/workflows/scripts/script.sh
         shell: bash
         env:
@@ -183,15 +183,7 @@ jobs:
 
       - name: Logs
         if: always()
-        run: |
-          echo "Need to debug? Please check: https://github.com/marketplace/actions/debugging-with-tmate"
-          http --timeout 30 --check-status --pretty format --print hb https://pulp/pulp/api/v3/status/ || true
-          docker images || true
-          docker ps -a || true
-          docker logs pulp || true
-          docker exec pulp ls -latr /etc/yum.repos.d/ || true
-          docker exec pulp cat /etc/yum.repos.d/* || true
-          docker exec pulp pip3 list
+        uses: mxschmitt/action-tmate@v3.7
 
   upgrade:
     runs-on: ubuntu-latest
@@ -233,7 +225,7 @@ jobs:
           echo ::endgroup::
 
       - name: Before Install
-        
+
         run: .github/workflows/scripts/before_install.sh
         shell: bash
         env:
@@ -247,7 +239,7 @@ jobs:
           GITHUB_CONTEXT: ${{ github.event.pull_request.commits_url }}
 
       - name: Install
-        
+
         run: .github/workflows/scripts/install.sh
         shell: bash
         env:
@@ -261,12 +253,12 @@ jobs:
           GITHUB_CONTEXT: ${{ github.event.pull_request.commits_url }}
 
       - name: Install Python client
-        
+
         run: .github/workflows/scripts/install_python_client.sh
         shell: bash
 
       - name: Before Script
-        
+
         run: .github/workflows/scripts/before_script.sh
         shell: bash
         env:
@@ -280,13 +272,13 @@ jobs:
           GITHUB_CONTEXT: ${{ github.event.pull_request.commits_url }}
 
       - name: Setting secrets
-        
+
         run: python3 .github/workflows/scripts/secrets.py "$SECRETS_CONTEXT"
         env:
           SECRETS_CONTEXT: ${{ toJson(secrets) }}
 
       - name: Upgrade Test
-        
+
         run: .github/workflows/scripts/script.sh
         shell: bash
         env:
